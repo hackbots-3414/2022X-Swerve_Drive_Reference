@@ -1,0 +1,151 @@
+package frc.robot.subsystems;								package frc.robot.subsystems;								
+																
+import com.kauailabs.navx.frc.AHRS;								import com.kauailabs.navx.frc.AHRS;								
+import edu.wpi.first.wpilibj.I2C;								import edu.wpi.first.wpilibj.I2C;								
+import edu.wpi.first.math.geometry.Pose2d;								import edu.wpi.first.math.geometry.Pose2d;								
+import edu.wpi.first.math.geometry.Rotation2d;								import edu.wpi.first.math.geometry.Rotation2d;								
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;								import edu.wpi.first.math.kinematics.SwerveDriveKinematics;								
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;								import edu.wpi.first.math.kinematics.SwerveDriveOdometry;								
+							      >	import edu.wpi.first.math.kinematics.SwerveModulePosition;								
+import edu.wpi.first.math.kinematics.SwerveModuleState;								import edu.wpi.first.math.kinematics.SwerveModuleState;								
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;								import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;								
+import edu.wpi.first.wpilibj2.command.SubsystemBase;								import edu.wpi.first.wpilibj2.command.SubsystemBase;								
+import frc.robot.Constants.DriveConstants;								import frc.robot.Constants.DriveConstants;								
+import frc.robot.Constants.ModuleConstants;								import frc.robot.Constants.ModuleConstants;								
+																
+public class SwerveSubsystem extends SubsystemBase {								public class SwerveSubsystem extends SubsystemBase {								
+    private final SwerveModule frontLeft = new SwerveModule(							      |									
+            DriveConstants.kFrontLeftDriveMotorPort,							      |	    SwerveModule[] mSwerveMods = {								
+            DriveConstants.kFrontLeftAzimuthMotorPort,							      |	            new SwerveModule(								
+            DriveConstants.kFrontLeftDriveEncoderReversed,							      |	                    DriveConstants.kFrontLeftDriveMotorPort,								
+            DriveConstants.kFrontLeftAzimuthEncoderReversed,							      |	                    DriveConstants.kFrontLeftAzimuthMotorPort								
+            DriveConstants.kFrontLeftDriveAbsoluteEncoderOffs							      |	                    DriveConstants.kFrontLeftDriveEncoderReve								
+            DriveConstants.kFrontLeftDriveAbsoluteEncoderReve							      |	                    DriveConstants.kFrontLeftAzimuthEncoderRe								
+            ModuleConstants.azimuthConfig,							      |	                    DriveConstants.kFrontLeftDriveAbsoluteEnc								
+            ModuleConstants.driveConfig);							      |	                    DriveConstants.kFrontLeftDriveAbsoluteEnc								
+							      |	                    ModuleConstants.azimuthConfig,								
+    private final SwerveModule frontRight = new SwerveModule(							      |	                    ModuleConstants.driveConfig),								
+            DriveConstants.kFrontRightDriveMotorPort,							      |	            new SwerveModule(								
+            DriveConstants.kFrontRightAzimuthMotorPort,							      |	                    DriveConstants.kFrontRightDriveMotorPort,								
+            DriveConstants.kFrontRightDriveEncoderReversed,							      |	                    DriveConstants.kFrontRightAzimuthMotorPor								
+            DriveConstants.kFrontRightAzimuthEncoderReversed,							      |	                    DriveConstants.kFrontRightDriveEncoderRev								
+            DriveConstants.kFrontRightDriveAbsoluteEncoderOff							      |	                    DriveConstants.kFrontRightAzimuthEncoderR								
+            DriveConstants.kFrontRightDriveAbsoluteEncoderRev							      |	                    DriveConstants.kFrontRightDriveAbsoluteEn								
+            ModuleConstants.azimuthConfig,							      |	                    DriveConstants.kFrontRightDriveAbsoluteEn								
+            ModuleConstants.driveConfig);							      |	                    ModuleConstants.azimuthConfig,								
+							      |	                    ModuleConstants.driveConfig),								
+    private final SwerveModule backLeft = new SwerveModule(							      |	            new SwerveModule(								
+            DriveConstants.kBackLeftDriveMotorPort,							      |	                    DriveConstants.kBackLeftDriveMotorPort,								
+            DriveConstants.kBackLeftAzimuthMotorPort,							      |	                    DriveConstants.kBackLeftAzimuthMotorPort,								
+            DriveConstants.kBackLeftDriveEncoderReversed,							      |	                    DriveConstants.kBackLeftDriveEncoderRever								
+            DriveConstants.kBackLeftAzimuthEncoderReversed,							      |	                    DriveConstants.kBackLeftAzimuthEncoderRev								
+            DriveConstants.kBackLeftDriveAbsoluteEncoderOffse							      |	                    DriveConstants.kBackLeftDriveAbsoluteEnco								
+            DriveConstants.kBackLeftDriveAbsoluteEncoderRever							      |	                    DriveConstants.kBackLeftDriveAbsoluteEnco								
+            ModuleConstants.azimuthConfig,							      |	                    ModuleConstants.azimuthConfig,								
+            ModuleConstants.driveConfig);							      |	                    ModuleConstants.driveConfig),								
+							      |	            new SwerveModule(								
+    private final SwerveModule backRight = new SwerveModule(							      |	                    DriveConstants.kBackRightDriveMotorPort,								
+            DriveConstants.kBackRightDriveMotorPort,							      |	                    DriveConstants.kBackRightAzimuthMotorPort								
+            DriveConstants.kBackRightAzimuthMotorPort,							      |	                    DriveConstants.kBackRightDriveEncoderReve								
+            DriveConstants.kBackRightDriveEncoderReversed,							      |	                    DriveConstants.kBackRightAzimuthEncoderRe								
+            DriveConstants.kBackRightAzimuthEncoderReversed,							      |	                    DriveConstants.kBackRightDriveAbsoluteEnc								
+            DriveConstants.kBackRightDriveAbsoluteEncoderOffs							      |	                    DriveConstants.kBackRightDriveAbsoluteEnc								
+            DriveConstants.kBackRightDriveAbsoluteEncoderReve							      |	                    ModuleConstants.azimuthConfig,								
+            ModuleConstants.azimuthConfig,							      |	                    ModuleConstants.driveConfig) };								
+            ModuleConstants.driveConfig);							      |									
+							      >	    SwerveModulePosition[] mPositions = {								
+							      >	        new SwerveModulePosition(),								
+							      >	        new SwerveModulePosition(),								
+							      >	        new SwerveModulePosition(),								
+							      >	        new SwerveModulePosition()								
+							      >	    };								
+																
+    private final AHRS gyro = new AHRS(I2C.Port.kMXP);								    private final AHRS gyro = new AHRS(I2C.Port.kMXP);								
+    private final SwerveDriveOdometry odometer = new SwerveDr							      |	    private final SwerveDriveOdometry odometer;								
+            new Rotation2d(0));							      <
+																
+    public SwerveSubsystem() {								    public SwerveSubsystem() {								
+        new Thread(() -> {								        new Thread(() -> {								
+            try {								            try {								
+                Thread.sleep(6000);								                Thread.sleep(6000);								
+                zeroHeading();								                zeroHeading();								
+            } catch (Exception e) {								            } catch (Exception e) {								
+            }								            }								
+        }).start();								        }).start();								
+							      >									
+							      >	        odometer = new SwerveDriveOdometry(DriveConstants.kDr								
+							      >	            new Rotation2d(0), getPositions() );								
+    }								    }								
+																
+    public void zeroHeading() {								    public void zeroHeading() {								
+        gyro.reset();								        gyro.reset();								
+    }								    }								
+																
+							      >	    public SwerveModulePosition[] getPositions() {								
+							      >	        // SwerveModulePosition[] positions = new SwerveModul								
+							      >	        mPositions[0] = mSwerveMods[0].getPosition();								
+							      >	        mPositions[1] = mSwerveMods[1].getPosition();								
+							      >	        mPositions[2] = mSwerveMods[2].getPosition();								
+							      >	        mPositions[3] = mSwerveMods[3].getPosition();								
+							      >	        return mPositions;								
+							      >	    }								
+							      >									
+    public double getHeading() {								    public double getHeading() {								
+        return Math.IEEEremainder(gyro.getAngle(), 360);								        return Math.IEEEremainder(gyro.getAngle(), 360);								
+    }								    }								
+																
+    public Rotation2d getRotation2d() {								    public Rotation2d getRotation2d() {								
+        return Rotation2d.fromDegrees(getHeading());								        return Rotation2d.fromDegrees(getHeading());								
+    }								    }								
+																
+    public Pose2d getPose() {								    public Pose2d getPose() {								
+        return odometer.getPoseMeters();								        return odometer.getPoseMeters();								
+    }								    }								
+																
+    public void resetOdometry(Pose2d pose) {								    public void resetOdometry(Pose2d pose) {								
+        odometer.resetPosition(pose, getRotation2d());							      |	        odometer.resetPosition(getRotation2d(), getPositions(								
+    }								    }								
+																
+    @Override								    @Override								
+    public void periodic() {								    public void periodic() {								
+        odometer.update(getRotation2d(), frontLeft.getState()							      |	        odometer.update(getRotation2d(), getPositions());								
+                backRight.getState());							      |	        // Robot State								
+//Robot State							      <
+        SmartDashboard.putNumber("Robot Heading", getHeading(								        SmartDashboard.putNumber("Robot Heading", getHeading(								
+        SmartDashboard.putString("Robot Location", getPose().								        SmartDashboard.putString("Robot Location", getPose().								
+//Module Absolute Angle Raw							      |	        // Module Absolute Angle Raw								
+        SmartDashboard.putNumber("Front Left Azimuth Absolute							      |	        SmartDashboard.putNumber("Front Left Azimuth Absolute								
+        SmartDashboard.putNumber("Front Right Azimuth Absolut							      |	        SmartDashboard.putNumber("Front Right Azimuth Absolut								
+        SmartDashboard.putNumber("Back Left Azimuth Absolute"							      |	        SmartDashboard.putNumber("Back Left Azimuth Absolute"								
+        SmartDashboard.putNumber("Back Right Azimuth Absolute							      |	        SmartDashboard.putNumber("Back Right Azimuth Absolute								
+//Module Angle							      |	        // Module Angle								
+        SmartDashboard.putNumber("Front Left Azimuth", frontL							      |	        SmartDashboard.putNumber("Front Left Azimuth", mSwerv								
+        SmartDashboard.putNumber("Front Right Azimuth", front							      |	        SmartDashboard.putNumber("Front Right Azimuth", mSwer								
+        SmartDashboard.putNumber("Back Left Azimuth", backLef							      |	        SmartDashboard.putNumber("Back Left Azimuth", mSwerve								
+        SmartDashboard.putNumber("Back Right Azimuth", backRi							      |	        SmartDashboard.putNumber("Back Right Azimuth", mSwerv								
+//Gyro Angle							      |	        // Gyro Angle								
+        SmartDashboard.putNumber("Gyro Angle", gyro.getAngle(								        SmartDashboard.putNumber("Gyro Angle", gyro.getAngle(								
+//Wheel Speed							      |	        // Wheel Speed								
+        SmartDashboard.putNumber("Front Left Drive m/s", fron							      |	        SmartDashboard.putNumber("Front Left Drive m/s", mSwe								
+        SmartDashboard.putNumber("Front Right Drive m/s", fro							      |	        SmartDashboard.putNumber("Front Right Drive m/s", mSw								
+        SmartDashboard.putNumber("Back Left Drive m/s", backL							      |	        SmartDashboard.putNumber("Back Left Drive m/s", mSwer								
+        SmartDashboard.putNumber("Back Right Drive m/s", back							      |	        SmartDashboard.putNumber("Back Right Drive m/s", mSwe								
+    }								    }								
+																
+    public void stopModules() {								    public void stopModules() {								
+        frontLeft.stop();							      |	        mSwerveMods[0].stop();								
+        frontRight.stop();							      |	        mSwerveMods[1].stop();								
+        backLeft.stop();							      |	        mSwerveMods[2].stop();								
+        backRight.stop();							      |	        mSwerveMods[3].stop();								
+    }								    }								
+																
+    public void setModuleStates(SwerveModuleState[] desiredSt								    public void setModuleStates(SwerveModuleState[] desiredSt								
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredSt								        SwerveDriveKinematics.desaturateWheelSpeeds(desiredSt								
+        frontLeft.setDesiredState(desiredStates[0]);							      |	        mSwerveMods[0].setDesiredState(desiredStates[0]);								
+        frontRight.setDesiredState(desiredStates[1]);							      |	        mSwerveMods[1].setDesiredState(desiredStates[1]);								
+        backLeft.setDesiredState(desiredStates[2]);							      |	        mSwerveMods[2].setDesiredState(desiredStates[2]);								
+        backRight.setDesiredState(desiredStates[3]);							      |	        mSwerveMods[3].setDesiredState(desiredStates[3]);								
+        //SmartDashboard.putString("Back Right Desired Angle"							      |	        // SmartDashboard.putString("Back Right Desired Angle								
+							      >	        // desiredStates[3].angle.toString());								
+    }								    }								
+}								}								
